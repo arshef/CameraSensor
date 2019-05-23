@@ -6,6 +6,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -18,6 +19,10 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.sql.Time;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Online extends AppCompatActivity implements SensorEventListener {
 
@@ -35,14 +40,22 @@ public class Online extends AppCompatActivity implements SensorEventListener {
     double down_angle, up_angle, object_height_from_ground, angle_with_ground, distance_from_object, length_of_object, human_length;
     Switch touch_ground_switch;
     SeekBar seek_human_length;
-    TextView ORI = findViewById(R.id.or), text_sek;
+    TextView ORI;
+    TextView text_sek;
     String rolls;
     int i = 0;
+
+    @Override
+    public void onBackPressed() {
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.online_lay);
+        ORI = findViewById(R.id.or);
+        text_sek = findViewById(R.id.text_seek);
         intialize_variables();
         try {
             mCamera = Camera.open();//you can use open(int) to use different cameras
@@ -59,15 +72,7 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ORI.setText("");
-                ORI.setVisibility(View.INVISIBLE);
-                down_angle = 0;
-                up_angle = 0;
-                angle_with_ground = 0;
-                touch_ground_switch.setVisibility(View.VISIBLE);
-                object_height_from_ground = 0;
-                length_of_object = 0;
-                distance_from_object = 0;
+                Do();
 
             }
         });
@@ -78,6 +83,19 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         magenticSensor = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         sensorManager.registerListener(this, accelerateSensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, magenticSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                take_angles();
+            }
+        }, 0, 20);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Do();
+            }
+        }, 0, 50);
         cross_h.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +132,23 @@ public class Online extends AppCompatActivity implements SensorEventListener {
                     touch_ground_switch.setText("Above Ground");
             }
         });
+    }
+
+    private void Do() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ORI.setText("");
+                ORI.setVisibility(View.INVISIBLE);
+            }
+        });
+        down_angle = 0;
+        up_angle = 0;
+        angle_with_ground = 0;
+        touch_ground_switch.setVisibility(View.VISIBLE);
+        object_height_from_ground = 0;
+        length_of_object = 0;
+        distance_from_object = 0;
     }
 
     @Override
@@ -181,10 +216,16 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         double part_of_my_tall = distance_from_object * Math.tan(Math.toRadians(up_angle));
         length_of_object = human_length - part_of_my_tall;
         if (length_of_object / 100 > 0) {
-            ORI.setText(String.format("length_of_object :\n%s", String.format("%s M\ndistance_from_object :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)))));
-            ORI.setVisibility(View.VISIBLE);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ORI.setText(String.format("length_of_object :\n%s", String.format("%s M\ndistance_from_object :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)))));
+                    ORI.setVisibility(View.VISIBLE);
+                }
+            });
         } else {
-            Toast.makeText(Online.this, "Move Forward", Toast.LENGTH_LONG).show();
+//            Looper.prepare();
+//            Toast.makeText(Online.this, "Move Forward", Toast.LENGTH_LONG).show();
             down_angle = 0;
             up_angle = 0;
             touch_ground_switch.setVisibility(View.VISIBLE);
@@ -204,7 +245,7 @@ public class Online extends AppCompatActivity implements SensorEventListener {
             down_angle = adjust_angle_rotation(Math.toDegrees(orientation[2]) % 360 + 90);
         else if (up_angle == 0) {
             up_angle = adjust_angle_rotation(Math.toDegrees(orientation[2]) % 360 + 90);
-            touch_ground_switch.setVisibility(View.INVISIBLE);
+//            touch_ground_switch.setVisibility(View.INVISIBLE);
             if (!touch_ground_switch.isChecked())
                 object_calculations_doesnt_touch_ground();
             else
@@ -272,8 +313,13 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         double part_up = distance_from_object * Math.tan(Math.toRadians(up_angle));
         length_of_object = part_down + part_up;
         object_height_from_ground = human_length - part_down;
-        ORI.setText(String.format("length_of_object :\n%s M\ndistance_from_object :\n%s M\nheight_from_ground :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)), String.format("%.2f", (object_height_from_ground / 100))));
-        ORI.setVisibility(View.VISIBLE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ORI.setText(String.format("length_of_object :\n%s M\ndistance_from_object :\n%s M\nheight_from_ground :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)), String.format("%.2f", (object_height_from_ground / 100))));
+                ORI.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     /**
@@ -305,8 +351,13 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         double part = distance_from_object * Math.tan(Math.toRadians(up_angle));
         length_of_object = all - part;
         object_height_from_ground = human_length - all;
-        ORI.setText(String.format("length_of_object :\n%s M\ndistance_from_object :\n%s M\nheight_from_ground :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)), String.format("%.2f", (object_height_from_ground / 100))));
-        ORI.setVisibility(View.VISIBLE);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ORI.setText(String.format("length_of_object :\n%s M\ndistance_from_object :\n%s M\nheight_from_ground :\n%s M", String.format("%.2f", (length_of_object / 100)), String.format("%.2f", (distance_from_object / 100)), String.format("%.2f", (object_height_from_ground / 100))));
+                ORI.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     /**
