@@ -121,7 +121,7 @@ public class Online extends AppCompatActivity implements SensorEventListener {
                 }
                 result = dob / models.size();
                 double e = result - distance_from_object;
-                Log.e("*********************", String.format("%s*********************", String.valueOf(result)));
+                Log.e("*********************", String.format("%s*********************", String.valueOf(result)));//
             }
         }, 400, 400);
         cross_h.setOnClickListener(new View.OnClickListener() {
