@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Looper;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -21,6 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +48,11 @@ public class Online extends AppCompatActivity implements SensorEventListener {
     TextView text_sek;
     String rolls;
     int i = 0;
+    /**
+     * Final distance
+     */
+    static double result;
+    List<DataModel> dataModels;
 
     @Override
     public void onBackPressed() {
@@ -53,6 +62,7 @@ public class Online extends AppCompatActivity implements SensorEventListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        dataModels = new ArrayList<>();
         setContentView(R.layout.online_lay);
         ORI = findViewById(R.id.or);
         text_sek = findViewById(R.id.text_seek);
@@ -88,6 +98,9 @@ public class Online extends AppCompatActivity implements SensorEventListener {
             @Override
             public void run() {
                 take_angles();
+                Date date = new Date();
+                DataModel model = new DataModel(distance_from_object, date);
+                dataModels.add(model);
             }
         }, 0, 20);
         timer.schedule(new TimerTask() {
@@ -96,6 +109,21 @@ public class Online extends AppCompatActivity implements SensorEventListener {
                 Do();
             }
         }, 0, 50);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                int size = dataModels.size();
+                List<DataModel> models = dataModels.subList(size - 20, size);
+                double dob = 0;
+                for (DataModel model :
+                        models) {
+                    dob += model.d;
+                }
+                result = dob / models.size();
+                double e = result - distance_from_object;
+                Log.e("*********************", String.format("%s*********************", String.valueOf(result)));
+            }
+        }, 400, 400);
         cross_h.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -148,7 +176,7 @@ public class Online extends AppCompatActivity implements SensorEventListener {
         touch_ground_switch.setVisibility(View.VISIBLE);
         object_height_from_ground = 0;
         length_of_object = 0;
-        distance_from_object = 0;
+//        distance_from_object = 0;
     }
 
     @Override

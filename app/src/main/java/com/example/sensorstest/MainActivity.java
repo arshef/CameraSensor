@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
                     strings.add(String.valueOf(v));
                 }
                 String s = String.join(",", strings);
-                Log.d("event:", s);
+//                Log.d("event:", s);
                 if (event.values[2] > 0.5f) Log.wtf("L", "Left");
                 else if (event.values[2] < -0.5f) Log.wtf("R", "Right");
             }

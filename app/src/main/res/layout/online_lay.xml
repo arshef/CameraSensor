@@ -64,21 +64,21 @@
         />
 
     <TextView
-        android:layout_width="wrap_content"
         android:id="@+id/or"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|left"
-        android:textColor="@android:color/holo_blue_bright"
-        android:strokeWidth="5"
-        android:textStyle="bold"
         android:rotation="90"
         android:shadowColor="@android:color/black"
-        android:strokeColor="#FFff0000"
         android:shadowDx="5"
         android:shadowDy="5"
-        android:textSize="19dp"
         android:shadowRadius="2.5"
-        />
+        android:strokeWidth="5"
+        android:strokeColor="#FFff0000"
+        android:textColor="@android:color/holo_blue_bright"
+        android:textSize="19dp"
+        android:textStyle="bold"
+        tools:visibility="invisible" />
 
     <ImageButton
         android:id="@+id/imgClose"
@@ -86,6 +86,7 @@
         android:layout_height="30dp"
         android:layout_gravity="right|top"
         android:background="@drawable/r"
-        android:padding="20dp" />
+        android:padding="20dp"
+        android:visibility="invisible" />
 
 </FrameLayout>
